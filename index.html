@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Praxisplan">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="application-name" content="Praxisplan">
+<link rel="manifest" href="data:application/json,{
+  &quot;name&quot;: &quot;Röntgenpraxis Heegbarg&quot;,
+  &quot;short_name&quot;: &quot;Praxisplan&quot;,
+  &quot;start_url&quot;: &quot;.&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;#0a0a0a&quot;,
+  &quot;theme_color&quot;: &quot;#0a0a0a&quot;,
+  &quot;orientation&quot;: &quot;portrait&quot;
+}">
+<!-- iOS Icon (SVG als inline data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230a0a0a' rx='20'/%3E%3Ctext x='90' y='70' font-family='Arial Black,sans-serif' font-size='52' font-weight='900' fill='white' text-anchor='middle' letter-spacing='2'%3ER%3C/text%3E%3Ctext x='90' y='125' font-family='Arial,sans-serif' font-size='16' font-weight='600' fill='%23666' text-anchor='middle' letter-spacing='3'%3EPRAXIS%3C/text%3E%3Ctext x='90' y='148' font-family='Arial,sans-serif' font-size='12' font-weight='400' fill='%23444' text-anchor='middle' letter-spacing='2'%3EPLAN%3C/text%3E%3C/svg%3E">
+<title>Praxisplan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&family=Barlow+Condensed:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0a;
+  --s1:#111;
+  --s2:#191919;
+  --s3:#222;
+  --s4:#2c2c2c;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --text:#e0e0e0;
+  --text2:#888;
+  --text3:#444;
+  --mono:'DM Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --FD:#1a3a5c;--FDt:#5a9fd4;
+  --MD:#1a3d2e;--MDt:#5abf8a;
+  --ZD:#3d2e0a;--ZDt:#d4a040;
+  --SD:#3d1a1a;--SDt:#d45a5a;
+  --SA:#2a1a3d;--SAt:#8a60d4;
+  --FREI:#1a1a1a;--FREIt:#555;
+  --K:#3d1a24;--Kt:#d45a70;
+  --FORTB:#0a2d38;--FORTBt:#40a0b8;
+  --U:#3b0d6e;--Ut:#c084fc;
+  --HO:#1e1e1e;--HOt:#666;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:14px}
+
+/* ── LOGIN ── */
+.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px}
+.login-box{width:100%;max-width:320px}
+.login-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.15em;color:var(--text3);text-transform:uppercase;margin-bottom:32px}
+.login-logo span{color:var(--text2)}
+.login-title{font-size:22px;font-weight:300;color:var(--text);margin-bottom:6px;letter-spacing:-0.5px}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:32px;font-family:var(--mono)}
+.login-persons{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.person-btn{padding:13px 16px;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:13px;font-family:var(--sans);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s;letter-spacing:0.1px}
+.person-btn:active{background:var(--s2);border-color:var(--border2)}
+.person-btn .arrow{color:var(--text3);font-size:16px}
+.admin-toggle{font-size:11px;color:var(--text3);text-align:center;cursor:pointer;font-family:var(--mono);letter-spacing:0.05em;padding:8px;text-decoration:underline;text-underline-offset:3px}
+.admin-pw-wrap{margin-top:8px;display:none}
+.admin-pw-wrap input{width:100%;padding:11px 13px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--mono);letter-spacing:0.1em;-webkit-appearance:none}
+.admin-pw-wrap button{width:100%;margin-top:8px;padding:12px;background:var(--s3);border:1px solid var(--border2);color:var(--text);font-size:13px;font-family:var(--sans);border-radius:8px;cursor:pointer;font-weight:500;letter-spacing:0.05em}
+
+/* ── APP SHELL ── */
+.app{display:none;flex-direction:column;height:100vh;overflow:hidden}
+.app.visible{display:flex}
+
+/* ── HEADER ── */
+.hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:12px 14px 0;flex-shrink:0;position:relative}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-title{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase}
+.hdr-user{font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:0.05em;cursor:pointer}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);display:inline-block;margin-right:6px;vertical-align:middle;transition:background 0.3s}
+.sync-dot.ok{background:#3a7a3a}.sync-dot.err{background:#7a3a3a}.sync-dot.loading{background:#7a6a2a;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border)}
+.tab{padding:8px 14px;font-size:11px;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:1px solid transparent;margin-bottom:-1px;letter-spacing:0.08em;text-transform:uppercase;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none}
+.tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+
+/* ── WEEK VIEW ── */
+.week-view{padding:0}
+.week-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
+.week-nav-btn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.week-label{font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:0.08em}
+
+/* Compact week grid */
+.week-grid{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.week-table{width:100%;min-width:360px;border-collapse:collapse}
+.week-table th{padding:7px 4px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;text-align:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:1}
+.week-table th.today-col{color:var(--text2)}
+.week-table td{padding:5px 2px;border-bottom:1px solid var(--border);vertical-align:middle}
+.week-table td:first-child{padding:4px 8px 4px 10px;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;font-family:var(--sans);width:72px}
+.week-table tr:last-child td{border-bottom:none}
+.week-table tr:nth-child(even) td{background:rgba(255,255,255,0.015)}
+.week-table tr:nth-child(odd) td{background:rgba(0,0,0,0.2)}
+.shift-cell{text-align:center;cursor:pointer}
+.shift-pill{display:inline-flex;align-items:center;justify-content:center;padding:6px 4px;border-radius:4px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:0.04em;min-width:36px;border:1px solid rgba(255,255,255,0.05);width:100%}
+.shift-pill.FD{background:var(--FD);color:var(--FDt)}
+.shift-pill.MD{background:var(--MD);color:var(--MDt)}
+.shift-pill.ZD{background:var(--ZD);color:var(--ZDt)}
+.shift-pill.SD{background:var(--SD);color:var(--SDt)}
+.shift-pill.SA{background:var(--SA);color:var(--SAt)}
+.shift-pill.F{background:var(--F);color:var(--Ft)}
+.shift-pill.K{background:var(--K);color:var(--Kt)}
+.shift-pill.FORTB{background:var(--FORTB);color:var(--FORTBt)}
+.shift-pill.U{background:var(--U);color:var(--Ut)}
+.shift-pill.HO{background:var(--HO);color:var(--HOt)}
+.shift-pill.empty{background:transparent;color:var(--text3);border-color:transparent}
+.today-col-bg{background:rgba(255,255,255,0.03)!important}
+
+/* ── MONTH VIEW ── */
+.month-view{padding:12px 14px}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.month-nav-btn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.month-label{font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase}
+.person-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ps-btn{padding:5px 10px;border-radius:4px;border:1px solid var(--border);background:var(--s1);color:var(--text3);font-size:10px;font-family:var(--mono);cursor:pointer;letter-spacing:0.05em;transition:all 0.15s}
+.ps-btn.active{background:var(--s3);border-color:var(--border2);color:var(--text)}
+.month-list{display:flex;flex-direction:column;gap:2px}
+.month-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:var(--s1);border:1px solid var(--border)}
+.month-row.weekend{opacity:0.4}
+.month-row.today{border-color:var(--border2);background:var(--s2)}
+.mday{font-family:var(--mono);font-size:10px;color:var(--text3);width:28px;flex-shrink:0;letter-spacing:0.05em}
+.mdow{font-family:var(--mono);font-size:9px;color:var(--text3);width:18px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.06em}
+.mday.today-day{color:var(--text2)}
+.export-btn{width:100%;margin-top:14px;padding:12px;background:var(--s2);border:1px solid var(--border2);color:var(--text2);font-size:12px;font-family:var(--mono);border-radius:8px;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.export-btn:active{background:var(--s3)}
+
+/* ── WISHES ── */
+.wishes-view{padding:12px 14px}
+.wish-form{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
+.wish-form-title{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px}
+.form-row{margin-bottom:10px}
+.form-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:5px}
+select,input[type=date],input[type=text],textarea{width:100%;padding:9px 11px;background:var(--s2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:var(--sans);-webkit-appearance:none;transition:border-color 0.15s}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--border2)}
+textarea{resize:none;height:72px}
+.shift-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.sg-btn{padding:8px 4px;border-radius:4px;border:1px solid var(--border);background:var(--s2);color:var(--text3);font-size:9px;font-family:var(--mono);cursor:pointer;text-align:center;letter-spacing:0.05em;transition:all 0.15s}
+.sg-btn.sel{color:white;border-color:transparent}
+.sg-btn.sel.FD{background:var(--FD);color:var(--FDt)}
+.sg-btn.sel.MD{background:var(--MD);color:var(--MDt)}
+.sg-btn.sel.ZD{background:var(--ZD);color:var(--ZDt)}
+.sg-btn.sel.SD{background:var(--SD);color:var(--SDt)}
+.sg-btn.sel.SA{background:var(--SA);color:var(--SAt)}
+.sg-btn.sel.F{background:var(--s4);color:var(--text2)}
+.sg-btn.sel.K{background:var(--K);color:var(--Kt)}
+.sg-btn.sel.FORTB{background:var(--FORTB);color:var(--FORTBt)}
+.sg-btn.sel.U{background:var(--U);color:var(--Ut)}
+.sg-btn.sel.HO{background:var(--s3);color:var(--text2)}
+.form-submit{width:100%;margin-top:12px;padding:11px;background:var(--s3);border:1px solid var(--border2);color:var(--text);font-size:12px;font-family:var(--mono);border-radius:7px;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase}
+.wish-list{display:flex;flex-direction:column;gap:6px}
+.wish-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:11px 13px;display:flex;align-items:center;gap:10px}
+.wish-card-info{flex:1}
+.wish-card-name{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:0.05em;margin-bottom:3px}
+.wish-card-date{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.wish-card-note{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.4}
+.wish-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0}
+
+/* ── ADMIN ── */
+.admin-view{padding:12px 14px}
+.admin-section{margin-bottom:16px}
+.admin-section-title{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.admin-shift-form{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px}
+.admin-btn{width:100%;padding:11px;background:var(--s2);border:1px solid var(--border2);color:var(--text2);font-size:11px;font-family:var(--mono);border-radius:7px;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;margin-top:10px}
+.wish-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.wish-item:last-child{border-bottom:none}
+.wish-quick{padding:4px 9px;background:var(--s3);border:1px solid var(--border2);color:var(--text2);font-size:9px;font-family:var(--mono);border-radius:4px;cursor:pointer;letter-spacing:0.05em;flex-shrink:0}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{background:var(--bg);border-top:1px solid var(--border);display:flex;padding:6px 0 20px;flex-shrink:0}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 4px;border:none;background:none;color:var(--text3);transition:color 0.2s}
+.nav-btn.active{color:var(--text2)}
+.nav-icon{font-size:16px;line-height:1}
+.nav-label{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)}
+.modal-box{background:var(--s1);border-radius:16px 16px 0 0;padding:16px 16px 36px;width:100%;max-width:480px;border-top:1px solid var(--border2);max-height:85vh;overflow-y:auto}
+.modal-handle{width:28px;height:2px;background:var(--s4);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:13px;font-weight:500;margin-bottom:16px;color:var(--text);letter-spacing:-0.1px}
+.modal-btns{display:flex;gap:7px;margin-top:18px}
+.mbtn-primary{flex:1;padding:11px;background:var(--s3);border:1px solid var(--border2);color:var(--text);font-size:12px;font-family:var(--mono);border-radius:7px;cursor:pointer;letter-spacing:0.05em}
+.mbtn-cancel{padding:11px 16px;background:var(--s2);border:1px solid var(--border);color:var(--text3);font-size:12px;font-family:var(--mono);border-radius:7px;cursor:pointer}
+.mbtn-danger{flex:1;padding:11px;background:rgba(60,20,20,0.4);border:1px solid rgba(100,40,40,0.3);color:#c08080;font-size:12px;font-family:var(--mono);border-radius:7px;cursor:pointer}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--border2);color:var(--text2);padding:8px 16px;border-radius:16px;font-size:11px;font-family:var(--mono);z-index:200;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;letter-spacing:0.05em}
+
+/* ── EMPTY ── */
+.empty-state{padding:48px 20px;text-align:center;color:var(--text3)}
+.empty-state p{font-family:var(--mono);font-size:10px;letter-spacing:0.08em}
+
+/* ── URLAUB ── */
+.urlaub-view{padding:12px 14px}
+.urlaub-year-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.urlaub-year-label{font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:0.1em}
+.urlaub-grid{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.urlaub-table{width:100%;min-width:480px;border-collapse:collapse;font-family:var(--mono);font-size:9px}
+.urlaub-table th{padding:5px 4px;text-align:center;color:var(--text3);font-weight:600;letter-spacing:0.05em;border-bottom:1px solid var(--border);background:var(--bg)}
+.urlaub-table th.person-col{text-align:left;padding-left:4px;min-width:70px}
+.urlaub-table td{padding:3px 2px;text-align:center;border-bottom:1px solid var(--border)}
+.urlaub-table td.person-cell{text-align:left;padding-left:4px;font-size:10px;color:var(--text2);font-weight:600;white-space:nowrap}
+.urlaub-table tr:last-child td{border-bottom:none}
+.u-day{display:inline-block;width:14px;height:14px;border-radius:2px;line-height:14px;font-size:7px;font-weight:700}
+.u-day.has-u{background:var(--s3);color:#70b840}
+.u-day.empty{background:transparent}
+.urlaub-summary{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.urlaub-person-row{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.urlaub-person-name{font-size:11px;font-weight:600;color:var(--text2);min-width:72px;font-family:var(--mono)}
+.urlaub-bar-wrap{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.urlaub-bar{height:6px;border-radius:3px;background:#2d5016}
+.urlaub-days{font-size:10px;color:var(--text3);font-family:var(--mono);min-width:40px;text-align:right}
+.urlaub-blocks{flex:1;display:flex;flex-wrap:wrap;gap:3px}
+.urlaub-block{font-size:9px;font-family:var(--mono);padding:2px 6px;border-radius:3px;background:var(--URLAUB,#1a3010);color:#70b840;letter-spacing:0.03em}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:5px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--border)}
+.leg{font-family:var(--mono);font-size:8px;letter-spacing:0.05em;padding:2px 6px;border-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+
+/* ── CAL HELP MODAL ── */
+.cal-help-bg{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+.cal-help-box{background:var(--s1);border-radius:16px;padding:24px;width:100%;max-width:380px;border:1px solid var(--border2)}
+.cal-help-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;letter-spacing:-0.2px}
+.cal-help-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:20px;letter-spacing:0.05em}
+.cal-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.cal-step-num{width:24px;height:24px;border-radius:50%;background:var(--s3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text2);flex-shrink:0}
+.cal-step-text{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+.cal-step-text strong{color:var(--text);font-weight:600}
+.cal-step-link{display:inline-block;margin-top:4px;padding:4px 10px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;color:#4a9fd4;font-size:11px;font-family:var(--mono);text-decoration:none;cursor:pointer}
+.cal-help-btns{display:flex;gap:8px;margin-top:20px}
+.cal-help-done{flex:1;padding:11px;background:var(--s3);border:1px solid var(--border2);color:var(--text);font-size:12px;font-family:var(--mono);border-radius:8px;cursor:pointer;letter-spacing:0.05em}
+.cal-help-close{padding:11px 16px;background:none;border:1px solid var(--border);color:var(--text3);font-size:12px;font-family:var(--mono);border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div style="margin-bottom:24px;text-align:left">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:700;letter-spacing:0.15em;color:#e8e8e8;text-transform:uppercase;line-height:1">RÖNTGENPRAXIS</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.15em;margin-top:4px;text-transform:uppercase">Heegbarg · Hamburg</div>
+    </div>
+    <div class="login-logo">Praxis<span>plan</span></div>
+    <div class="login-title">Wer bist du?</div>
+    <div class="login-sub">Wähle deinen Namen</div>
+    <div class="login-persons" id="personBtns"></div>
+    <div class="admin-toggle" onclick="toggleAdminPw()">Admin-Zugang</div>
+    <div class="admin-pw-wrap" id="adminPwWrap">
+      <input type="password" id="adminPwInput" placeholder="Passwort" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button onclick="adminLogin()">Einloggen</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-title">Praxis<span style="opacity:0.4">plan</span> <span style="font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:0.05em;font-weight:400">Röntgenpraxis Heegbarg</span></div>
+      <div class="hdr-user" onclick="logout()">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="hdrUser">–</span>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-week" onclick="switchTab('week')">Woche</button>
+      <button class="tab" id="tab-month" onclick="switchTab('month')">Monat</button>
+      <button class="tab" id="tab-urlaub" onclick="switchTab('urlaub')">Urlaub</button>
+      <button class="tab" id="tab-wishes" onclick="switchTab('wishes')">Wünsche</button>
+      <button class="tab" id="tab-admin" onclick="switchTab('admin')" style="display:none">Admin</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="leg" style="background:var(--FD);color:var(--FDt)">FD 7:30</div>
+    <div class="leg" style="background:var(--MD);color:var(--MDt)">MD 11:00</div>
+    <div class="leg" style="background:var(--ZD);color:var(--ZDt)">ZD 10:00</div>
+    <div class="leg" style="background:var(--SD);color:var(--SDt)">SD 14:00</div>
+    <div class="leg" style="background:var(--SA);color:var(--SAt)">SA 9:00</div>
+    <div class="leg" style="background:var(--K);color:var(--Kt)">K</div>
+    <div class="leg" style="background:var(--U);color:var(--Ut)">U</div>
+    <div class="leg" style="background:var(--FORTB);color:var(--FORTBt)">Fortb.</div>
+    <div class="leg" style="background:var(--HO);color:var(--HOt)">HO</div>
+  </div>
+
+  <div class="content">
+    <div id="weekView"></div>
+    <div id="monthView" style="display:none"></div>
+    <div id="urlaubView" style="display:none"></div>
+    <div id="wishesView" style="display:none"></div>
+    <div id="adminView" style="display:none"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-week" onclick="switchTab('week')"><div class="nav-icon">⊞</div><div class="nav-label">Woche</div></button>
+    <button class="nav-btn" id="nav-month" onclick="switchTab('month')"><div class="nav-icon">☷</div><div class="nav-label">Monat</div></button>
+    <button class="nav-btn" id="nav-urlaub" onclick="switchTab('urlaub')"><div class="nav-icon">✈</div><div class="nav-label">Urlaub</div></button>
+    <button class="nav-btn" id="nav-wishes" onclick="switchTab('wishes')"><div class="nav-icon">✦</div><div class="nav-label">Wünsche</div></button>
+    <button class="nav-btn" id="nav-admin" onclick="switchTab('admin')" style="display:none"><div class="nav-icon">◈</div><div class="nav-label">Admin</div></button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="shiftModal" style="display:none" onclick="if(event.target===this)closeModal('shiftModal')">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="shiftModalTitle">Schicht bearbeiten</div>
+    <div class="form-row"><label class="form-label">Person</label><select id="smPerson"></select></div>
+    <div class="form-row"><label class="form-label">Datum</label><input type="date" id="smDate"></div>
+    <div class="form-row"><label class="form-label">Schicht</label>
+      <div class="shift-grid" id="smPicker"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-primary" onclick="saveShift()">Speichern</button>
+      <button class="mbtn-cancel" onclick="closeModal('shiftModal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="delModal" style="display:none" onclick="if(event.target===this)closeModal('delModal')">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Eintrag löschen?</div>
+    <div style="font-size:12px;color:var(--text2);font-family:var(--mono);margin-bottom:4px" id="delInfo"></div>
+    <div class="modal-btns">
+      <button class="mbtn-danger" onclick="confirmDel()">Löschen</button>
+      <button class="mbtn-cancel" onclick="closeModal('delModal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Calendar Help Modal -->
+<div class="cal-help-bg" id="calHelpModal" style="display:none">
+  <div class="cal-help-box">
+    <div class="cal-help-title">📅 In Kalender importieren</div>
+    <div class="cal-help-sub" id="calHelpName"></div>
+    <div class="cal-step">
+      <div class="cal-step-num">1</div>
+      <div class="cal-step-text">
+        Die <strong>.ics Datei</strong> wurde soeben heruntergeladen – sie liegt in deinem <strong>Downloads-Ordner</strong>.
+      </div>
+    </div>
+    <div class="cal-step">
+      <div class="cal-step-num">2</div>
+      <div class="cal-step-text" id="calHelpStep2">
+        Dateien-App öffnen → Downloads → Datei antippen → „Zum Kalender hinzufügen"
+      </div>
+    </div>
+    <div class="cal-step" id="calStepGoogle" style="display:none">
+      <div class="cal-step-num">3</div>
+      <div class="cal-step-text">
+        In Google Kalender: oben rechts <strong>⚙ Einstellungen</strong> → links <strong>„Importieren"</strong> → Datei auswählen → <strong>„Importieren"</strong>
+      </div>
+    </div>
+    <div class="cal-step" id="calStepIphone" style="display:none">
+      <div class="cal-step-num">3</div>
+      <div class="cal-step-text">Fertig! 🎉</div>
+    </div>
+    <div class="cal-help-btns">
+      <button class="cal-help-done" onclick="document.getElementById('calHelpModal').style.display='none'">✓ Verstanden</button>
+      <button class="cal-help-close" onclick="document.getElementById('calHelpModal').style.display='none'">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const SHEET_ID = '1DlO9Lk6jH8bB1XA6ArYd7fgDZzE175OhBV7DRq8rFoU';
+const SERVICE_ACCOUNT = 'praxisplan-app@praxisplan-502320.iam.gserviceaccount.com';
+const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC+GIzS1uUMB5kq
+K9MgARHdjJ05XPrsOLX+0OLhp5AVCR72Y3XJK6lnJdygFRLypYTmYXNxiFXwS04q
+LSmylgytS1srmelK5zKFPW07MF9wxdvODK1QhSbo4MvB89wRkK12AaqwAOLaWeQj
+B3b9vpPM8hjXfgxCjVZLS6ryTgK9tfWLAOQ5nB/tXc3oi3WzDjkW40z8kwBWovAe
+rfhuEtExehQQeUkH+YpocgELBh46xI6GiAHApehhc/XVRGx+0SRJyUn/jk/XP6Ef
+T7IegktxiseF42Q1fADX7y5Mln7VKHYdBW75EITf7XzXSGxSWyUoN2UqTTZ+EPl8
+FhZGc3SJAgMBAAECggEAE0sTk9yKn6dvxKdxBJkHMqiwVl+Y+fuhgQy7UjK6/V+R
+HGmozTOYvGbL1xV8eFMTQ3yVhmrTahGCi+ZMipsPC1GQHcM/ucHwTzSWTwEQVrZG
+IkoIFxmEgvM5yuQQrFm2OTlfFQDqBUZFUMbTrVo3zv+tRMW+wcxtezPhVDlVruJJ
+XSus4KoT9/MJ9L6PF+0T3p7c6p3lWziHoHIJyr8rtbBpUvNLULEirdc0MHmrinrR
+PJBCRjiLWCB0Ja4RQAXv6QpWNxMlg5ytCTVJmRvkAi1BsernA7ABxJJeQ/lp6Z8f
+gf9BV/diKEY9NCZEe4eZhIv8Hkhlwz3foKPKZVAKbwKBgQDzKLzpYlxyrG9X3La5
+OUkyH9GlpZ5/C0fl9JzxSG+Nl39fbGneOPd1IssyTHJPKyByBGulJQbrWVoGMBLK
+hPauDdwk0eZlsho7k7sBW9TrqTOZBxuP9A8TwkCgGuwFfLqDTAyoposbWx6iTcxH
+98RTMfxZNnXF02MbeJX9QWy9gwKBgQDIInOgJqtl+T+FAckA9wBm8gmR4jXWtodT
+VIMOsuhjr65/7/3bTuxme1O2OJGw/x25Rc0LjcqwQvnOxZKpnL6oOvRj6p2sa5wH
+Y8+Ln7shAbwLD4w712Q13JSQOH2VJr2c3nOYOZd6MnLZmTBfyVV8VzMwWfe6uwzl
+5zIot/UUAwKBgGOin7Xp7gO3EHCqKd0/0fROAXOkp4tbLfzV/LEJg1w7ZZ/OJps+
+MHe46BYWKQiznTnbAdjLkUhCdpbuf+SoEwRC/Z/Aum2VSxZ6dDgcTuS5kkD0HqEf
+2kW4ZQ61uVyOPUarlMxOYdW1wpmy0y/yIGoOo15S6HNFKOkKwjrh4hLNAoGBAKTg
+/TErqnlQZqxFVDufQo2NSaUOIBzMM6DLN02cxyeZTMHKDfHni4rCf6zX3e9bvjks
+8EhcgGfGRde7naBuqgQezcijOVMbNGhCKnJ1Hc2LiEf0fyutv7lACITohU2jpQLf
+oYv/pnPdrBDoy5meXPcbP+jNtfH4uB+P4Rr6ssXRAoGBANg/WVjoCD2dXYsGZtBy
+ZxCkCJM5NItXdTLJZy1TaorgNsf9jKPcoCYuzzYIxAI/utFRts1KkYu5g287++i2
+NzicOLcriQr6A/QfUa0So5835NYKDELQbge61b+Q+Lj2YZ74l09WCn+1A48A5WXY
+KK61z+GD7hdy/3TRcpr9VyhY
+-----END PRIVATE KEY-----`;
+
+const PERSONS = ['Ralf','Stefan','Maren','Clemens','Alexander','Lorenz'];
+const ADMIN_PW = 'heegbarg';
+const SHIFTS_LIST = ['FD','MD','ZD','SD','SA','F','K','FORTB','U','HO'];
+const SHIFT_TIMES = {FD:'7:30–13:30',MD:'11–17',ZD:'10–16',SD:'14–20',SA:'9–14',F:'–',K:'Krank',U:'Urlaub',FORTB:'Fortbildung',HO:'Homeoffice'};
+
+// ── STATE ──
+let currentUser = null; // {name, index, isAdmin}
+let currentTab = 'week';
+let weekOffset = 0;
+let monthOffset = 0;
+let selectedMonthPerson = 0;
+let shiftData = {}; // {date: {person: shift}}
+let wishData = [];
+let selShift = null;
+let delTarget = null;
+let googleToken = null;
+let tokenExpiry = 0;
+
+// ── HELPERS ──
+function pad(n){return String(n).padStart(2,'0');}
+function fmt(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function fmtDisplay(ds){const[y,m,d]=ds.split('-');return `${d}.${m}.${y}`;}
+function getMonday(offset=0){
+  const now=new Date(),dow=now.getDay();
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-(dow===0?6:dow-1)+offset*7);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+function getWeekDays(offset=0){
+  const mon=getMonday(offset);
+  return Array.from({length:6},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+}
+function getDaysInMonth(y,m){return new Date(y,m,0).getDate();}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2200);}
+function setSyn(st){const d=document.getElementById('syncDot');d.className='sync-dot'+(st?' '+st:'');}
+
+// ── GOOGLE AUTH (JWT) ──
+async function getGoogleToken(){
+  if(googleToken && Date.now() < tokenExpiry - 30000) return googleToken;
+  try {
+    // Build JWT
+    const header = btoa(JSON.stringify({alg:'RS256',typ:'JWT'})).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+    const now = Math.floor(Date.now()/1000);
+    const claim = btoa(JSON.stringify({
+      iss: SERVICE_ACCOUNT,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now+3600, iat: now
+    })).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+
+    const sigInput = `${header}.${claim}`;
+
+    // Import private key
+    const pemBody = PRIVATE_KEY.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,'');
+    const binaryKey = Uint8Array.from(atob(pemBody), c=>c.charCodeAt(0));
+    const cryptoKey = await crypto.subtle.importKey('pkcs8', binaryKey,
+      {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'}, false, ['sign']);
+
+    const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey,
+      new TextEncoder().encode(sigInput));
+    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+
+    const jwt = `${sigInput}.${sigB64}`;
+
+    const resp = await fetch('https://oauth2.googleapis.com/token', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:`grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`
+    });
+    const data = await resp.json();
+    googleToken = data.access_token;
+    tokenExpiry = Date.now() + (data.expires_in||3600)*1000;
+    return googleToken;
+  } catch(e) {
+    console.error('Token error:', e);
+    return null;
+  }
+}
+
+// ── SHEETS API ──
+async function sheetsGet(range){
+  const token = await getGoogleToken();
+  if(!token) return null;
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}`,
+    {headers:{Authorization:`Bearer ${token}`}});
+  return r.ok ? (await r.json()).values : null;
+}
+
+async function sheetsAppend(values, sheetName='Wünsche'){
+  const token = await getGoogleToken();
+  if(!token) return false;
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent("'"+sheetName+"'!A:D")}:append?valueInputOption=RAW`,
+    {method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+    body:JSON.stringify({values})});
+  return r.ok;
+}
+
+async function sheetsBatchUpdate(requests){
+  const token = await getGoogleToken();
+  if(!token) return false;
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
+    {method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+    body:JSON.stringify({valueInputOption:'RAW',data:requests})});
+  return r.ok;
+}
+
+// ── LOAD DATA ──
+const MONTH_NAMES = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+function getSheetName(year, month){
+  return `${MONTH_NAMES[month-1]} ${year}`;
+}
+
+async function loadSheetMonth(y, m){
+  const sheetName = getSheetName(y,m);
+  const rows = await sheetsGet(`'${sheetName}'!A1:AF8`);
+  if(!rows||rows.length<3) return;
+  const dayRow = rows[0];
+  for(let ri=2; ri<rows.length; ri++){
+    const personName = rows[ri][0];
+    const pi = PERSONS.indexOf(personName);
+    if(pi<0) continue;
+    for(let ci=1; ci<rows[ri].length; ci++){
+      const shift = rows[ri][ci];
+      if(!shift) continue;
+      const day = parseInt(dayRow[ci]);
+      if(!day) continue;
+      const ds = `${y}-${pad(m)}-${pad(day)}`;
+      if(!shiftData[ds]) shiftData[ds]={};
+      shiftData[ds][pi] = shift;
+    }
+  }
+}
+
+async function loadData(){
+  setSyn('loading');
+  shiftData = {};
+  try {
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth()+1;
+    const wMon = getMonday(weekOffset);
+    const wy = wMon.getFullYear(), wm = wMon.getMonth()+1;
+
+    // 1. Load current month immediately
+    await loadSheetMonth(curYear, curMonth);
+    if(!(wy===curYear && wm===curMonth)) await loadSheetMonth(wy, wm);
+    setSyn('ok');
+    renderCurrent();
+
+    // 2. Load everything else in background
+    setTimeout(async () => {
+      setSyn('loading');
+      const done = new Set([`${curYear}-${curMonth}`,`${wy}-${wm}`]);
+      const allMonths = [];
+      for(let m=1;m<=12;m++) if(!done.has(`${curYear}-${m}`)) allMonths.push([curYear,m]);
+      const nextYear = curYear+1;
+      for(let m=1;m<=12;m++) allMonths.push([nextYear,m]);
+      for(const [y,m] of allMonths) await loadSheetMonth(y,m);
+
+      // Load wishes
+      const wrows = await sheetsGet("Wünsche!A:D");
+      wishData = [];
+      if(wrows){
+        for(const row of wrows){
+          const[date,person,shift,note]=row;
+          if(!date||date==='Datum') continue;
+          const pi=PERSONS.indexOf(person);
+          if(pi>=0) wishData.push({date,person:pi,shift,note:note||''});
+        }
+      }
+      setSyn('ok');
+      setTimeout(()=>setSyn(''),2000);
+      renderCurrent();
+    }, 200);
+
+  } catch(e){
+    console.error(e);
+    setSyn('err');
+    renderCurrent();
+  }
+}
+
+async function saveShiftToSheets(date, personIdx, shift){
+  const [y,m,d] = date.split('-').map(Number);
+  const sheetName = getSheetName(y,m);
+  // Read the sheet to find person row and day column
+  const rows = await sheetsGet(`'${sheetName}'!A1:AF8`);
+  if(!rows) return false;
+  const dayRow = rows[0];
+  let dayCol = -1;
+  for(let ci=1;ci<dayRow.length;ci++){
+    if(parseInt(dayRow[ci])===d){dayCol=ci+1;break;}
+  }
+  if(dayCol<0) return false;
+  // Find person row
+  let personRow = -1;
+  for(let ri=2;ri<rows.length;ri++){
+    if(rows[ri][0]===PERSONS[personIdx]){personRow=ri+1;break;}
+  }
+  if(personRow<0) return false;
+  // Convert col number to letter(s)
+  const colLetter = colToLetter(dayCol);
+  await sheetsBatchUpdate([{range:`'${sheetName}'!${colLetter}${personRow}`,values:[[shift]]}]);
+  return true;
+}
+
+function colToLetter(col){
+  let letter='';
+  while(col>0){
+    const rem=(col-1)%26;
+    letter=String.fromCharCode(65+rem)+letter;
+    col=Math.floor((col-1)/26);
+  }
+  return letter;
+}
+
+// ── LOGIN ──
+function initLogin(){
+  const btns = document.getElementById('personBtns');
+  btns.innerHTML = PERSONS.map((p,i)=>
+    `<button class="person-btn" onclick="loginAs(${i})"><span>${p}</span><span class="arrow">→</span></button>`
+  ).join('');
+  btns.innerHTML += `<button class="person-btn" style="opacity:0.5" onclick="loginAsGuest()"><span>Gast</span><span class="arrow" style="font-size:11px;color:var(--text3)">nur lesen</span></button>`;
+}
+
+function loginAsGuest(){
+  currentUser = {name:'Gast', index:-1, isAdmin:false, isGuest:true};
+  document.getElementById('hdrUser').textContent = 'Gast';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  selectedMonthPerson = 0;
+  loadData();
+}
+
+function loginAs(idx){
+  currentUser = {name:PERSONS[idx], index:idx, isAdmin:false};
+  document.getElementById('hdrUser').textContent = PERSONS[idx];
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  selectedMonthPerson = idx;
+  loadData();
+}
+
+function toggleAdminPw(){
+  const w=document.getElementById('adminPwWrap');
+  w.style.display=w.style.display==='none'?'block':'none';
+  if(w.style.display==='block') document.getElementById('adminPwInput').focus();
+}
+
+function adminLogin(){
+  const pw=document.getElementById('adminPwInput').value;
+  if(pw===ADMIN_PW){
+    currentUser={name:'Alexander',index:4,isAdmin:true};
+    document.getElementById('hdrUser').textContent='Alexander ◈';
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('tab-admin').style.display='';
+    document.getElementById('nav-admin').style.display='';
+    selectedMonthPerson=4;
+    loadData();
+  } else {
+    document.getElementById('adminPwInput').value='';
+    document.getElementById('adminPwInput').placeholder='Falsches Passwort';
+  }
+}
+
+function logout(){
+  currentUser=null;googleToken=null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('adminPwInput').value='';
+  document.getElementById('adminPwWrap').style.display='none';
+  document.getElementById('tab-admin').style.display='none';
+  document.getElementById('nav-admin').style.display='none';
+}
+
+// ── TABS ──
+function switchTab(t){
+  currentTab=t;
+  ['week','month','urlaub','wishes','admin'].forEach(id=>{
+    const view=document.getElementById(id+'View');
+    if(view) view.style.display=id===t?'block':'none';
+    const tab=document.getElementById('tab-'+id);
+    const nav=document.getElementById('nav-'+id);
+    if(tab) tab.className='tab'+(id===t?' active':'');
+    if(nav) nav.className='nav-btn'+(id===t?' active':'');
+  });
+  renderCurrent();
+}
+
+function renderCurrent(){
+  if(currentTab==='week') renderWeek();
+  else if(currentTab==='month') renderMonth();
+  else if(currentTab==='urlaub') renderUrlaub();
+  else if(currentTab==='wishes') renderWishes();
+  else if(currentTab==='admin') renderAdmin();
+}
+
+// ── WEEK VIEW ──
+function renderWeek(){
+  const days=getWeekDays(weekOffset);
+  const today=fmt(new Date());
+  const mon=days[0],sat=days[5];
+  const DOW=['Mo','Di','Mi','Do','Fr','Sa'];
+
+  let html=`<div class="week-nav">
+    <button class="week-nav-btn" onclick="weekOffset--;renderWeek()">‹</button>
+    <div class="week-label">${mon.getDate()}.${mon.getMonth()+1}. – ${sat.getDate()}.${sat.getMonth()+1}.${sat.getFullYear()}</div>
+    <button class="week-nav-btn" onclick="weekOffset++;renderWeek()">›</button>
+  </div>
+
+  <div class="week-grid"><table class="week-table">
+  <thead><tr><th></th>`;
+
+  days.forEach((d,i)=>{
+    const ds=fmt(d);
+    const isToday=ds===today;
+    html+=`<th class="${isToday?'today-col':''}">${DOW[i]}<br><span style="font-size:8px;opacity:0.6">${d.getDate()}.${d.getMonth()+1}</span></th>`;
+  });
+  html+='</tr></thead><tbody>';
+
+  PERSONS.forEach((person,pi)=>{
+    html+=`<tr>`;
+    html+=`<td>${person}</td>`;
+    days.forEach((d,di)=>{
+      const ds=fmt(d);
+      const isSat=d.getDay()===6;
+      const shift=(shiftData[ds]||{})[pi];
+      const isToday=ds===today;
+
+      // Ralf fixed shifts
+      let displayShift=shift;
+      if(!displayShift && pi===0 && !isSat){
+        const dow=(d.getDay()+6)%7;
+        if(dow===0||dow===4) displayShift='SD';
+        if(dow===1||dow===3) displayShift='FD';
+      }
+
+      const canEdit=currentUser&&currentUser.isAdmin;
+      const onclick=canEdit?`openShiftModal(${pi},'${ds}','${displayShift||''}')`:'';
+
+      html+=`<td class="shift-cell ${isToday?'today-col-bg':''}" ${onclick?`onclick="${onclick}"`:''}>`;
+      if(displayShift){
+        html+=`<span class="shift-pill ${displayShift}">${displayShift}</span>`;
+      } else {
+        html+=`<span class="shift-pill empty">–</span>`;
+      }
+      html+=`</td>`;
+    });
+    html+=`</tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+  // Add subtle PDF buttons at bottom
+  html += `<div style="display:flex;gap:8px;padding:10px 14px 4px">
+    <button onclick="printWeek()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;background:var(--s2);border:1px solid var(--border2);color:var(--text2);font-size:11px;font-family:var(--mono);border-radius:8px;cursor:pointer;letter-spacing:0.06em">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/></svg>
+      Woche als PDF
+    </button>
+    <button onclick="printMonth()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;background:var(--s2);border:1px solid var(--border2);color:var(--text2);font-size:11px;font-family:var(--mono);border-radius:8px;cursor:pointer;letter-spacing:0.06em">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/></svg>
+      Monat als PDF
+    </button>
+  </div>`;
+  document.getElementById('weekView').innerHTML=html;
+}
+
+// ── MONTH VIEW ──
+function renderMonth(){
+  const now=new Date();
+  const year=now.getFullYear()+(monthOffset!==0?0:0);
+  const d=new Date(now.getFullYear(),now.getMonth()+monthOffset,1);
+  const y=d.getFullYear(),m=d.getMonth()+1;
+  const dim=getDaysInMonth(y,m);
+  const today=fmt(new Date());
+  const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const DOW=['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+  let html=`<div class="month-view">
+  <div class="month-nav">
+    <button class="month-nav-btn" onclick="monthOffset--;renderMonth()">‹</button>
+    <div class="month-label">${MONTHS[m-1]} ${y}</div>
+    <button class="month-nav-btn" onclick="monthOffset++;renderMonth()">›</button>
+  </div>
+  <div class="person-selector">
+    ${PERSONS.map((p,i)=>`<button class="ps-btn${i===selectedMonthPerson?' active':''}" onclick="selectedMonthPerson=${i};renderMonth()">${p}</button>`).join('')}
+  </div>
+  <div class="month-list">`;
+
+  const pi=selectedMonthPerson;
+  for(let day=1;day<=dim;day++){
+    const ds=`${y}-${pad(m)}-${pad(day)}`;
+    const dow=new Date(y,m-1,day).getDay();
+    const isWknd=dow===0||dow===6;
+    const isToday=ds===today;
+    const shift=(shiftData[ds]||{})[pi];
+
+    // Ralf fixed
+    let displayShift=shift;
+    if(!displayShift && pi===0 && !isWknd){
+      const di=(dow+6)%7;
+      if(di===0||di===4) displayShift='SD';
+      if(di===1||di===3) displayShift='FD';
+    }
+
+    html+=`<div class="month-row${isWknd?' weekend':''}${isToday?' today':''}">
+      <span class="mday${isToday?' today-day':''}">${pad(day)}</span>
+      <span class="mdow">${DOW[dow]}</span>
+      ${displayShift?`<span class="shift-pill ${displayShift}">${displayShift}</span>`:
+        isWknd?'':
+        `<span class="shift-pill empty" style="font-size:9px">–</span>`}
+      ${displayShift&&SHIFT_TIMES[displayShift]?`<span style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-left:4px">${SHIFT_TIMES[displayShift]}</span>`:''}
+    </div>`;
+  }
+
+  html+=`</div>
+  <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+    <button class="export-btn" style="flex:1;min-width:120px" onclick="exportCalendar(${pi},${y},${m},'iphone')">
+      <span>🍎</span> In iPhone Kalender exportieren
+    </button>
+    <button class="export-btn" style="flex:1;min-width:120px" onclick="exportCalendar(${pi},${y},${m},'google')">
+      <span>📅</span> In Google Kalender exportieren
+    </button>
+    <button class="export-btn" style="flex:1;min-width:120px" onclick="printPersonMonth(${pi},${y},${m})">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/></svg>
+      PDF
+    </button>
+  </div>
+  </div>`;
+
+  document.getElementById('monthView').innerHTML=html;
+}
+
+// ── EXPORT TO CALENDAR (ICS) with UIDs for update support ──
+function exportCalendar(pi,y,m,calType='iphone'){
+  const dim=getDaysInMonth(y,m);
+  const name=PERSONS[pi];
+  const MONTH_NAMES=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const now=new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Praxisplan//DE\r\n';
+  ics+='X-WR-CALNAME:'+name+' Dienste\r\n';
+  ics+='X-WR-TIMEZONE:Europe/Berlin\r\n';
+  ics+='METHOD:PUBLISH\r\n';
+
+  let count=0;
+  for(let day=1;day<=dim;day++){
+    const ds=`${y}-${pad(m)}-${pad(day)}`;
+    const dow=new Date(y,m-1,day).getDay();
+    const isWknd=dow===0||dow===6;
+    let shift=(shiftData[ds]||{})[pi];
+    if(!shift&&pi===0&&!isWknd){
+      const di=(dow+6)%7;
+      if(di===0||di===4) shift='SD';
+      if(di===1||di===3) shift='FD';
+    }
+    if(!shift||shift==='F'||shift==='U'||shift==='K') continue;
+
+    const times=SHIFT_TIMES[shift];
+    let dtstart,dtend,allDay=false;
+    if(times&&times.includes('–')){
+      const[s,e]=times.split('–');
+      const[sh,sm]=s.trim().split(':');
+      const[eh,em]=e.trim().split(':');
+      dtstart=`${y}${pad(m)}${pad(day)}T${pad(sh)}${pad(sm||'00')}00`;
+      dtend=`${y}${pad(m)}${pad(day)}T${pad(eh)}${pad(em||'00')}00`;
+    } else {
+      // All-day for non-time shifts
+      dtstart=`${y}${pad(m)}${pad(day)}`;
+      dtend=`${y}${pad(m)}${pad(day)}`;
+      allDay=true;
+    }
+
+    // Unique stable UID – same UID on re-export = iOS updates instead of duplicating
+    const uid=`${shift}-${y}${pad(m)}${pad(day)}-${name.toLowerCase()}@praxisplan`;
+
+    ics+='BEGIN:VEVENT\r\n';
+    ics+=`UID:${uid}\r\n`;
+    ics+=`DTSTAMP:${now}\r\n`;
+    ics+=`SUMMARY:${shift} · Praxis\r\n`;
+    if(allDay){
+      ics+=`DTSTART;VALUE=DATE:${dtstart}\r\n`;
+      ics+=`DTEND;VALUE=DATE:${dtend}\r\n`;
+    } else {
+      ics+=`DTSTART;TZID=Europe/Berlin:${dtstart}\r\n`;
+      ics+=`DTEND;TZID=Europe/Berlin:${dtend}\r\n`;
+    }
+    ics+=`DESCRIPTION:${shift} – ${times||''}\r\n`;
+    ics+='END:VEVENT\r\n';
+    count++;
+  }
+  ics+='END:VCALENDAR';
+
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`${name}_${y}-${pad(m)}.ics`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  // Show help dialog
+  document.getElementById('calHelpName').textContent = `${name} · ${count} Termine · ${MONTH_NAMES[m-1]} ${y}`;
+  // Update step 2 based on calendar type
+  const step2 = document.getElementById('calHelpStep2');
+  if(calType==='google'){
+    step2.innerHTML = `<strong>Google Kalender:</strong> Auf den Link tippen →
+      <span class="cal-step-link" onclick="window.open('https://calendar.google.com/calendar/r/settings/export','_blank')">Google Kalender öffnen</span>`;
+    document.getElementById('calStepGoogle').style.display='flex';
+    document.getElementById('calStepIphone').style.display='none';
+  } else {
+    step2.innerHTML = `<strong>iPhone:</strong> Dateien-App öffnen → Downloads-Ordner → Datei antippen → <strong>„Zum Kalender hinzufügen"</strong> tippen → fertig!`;
+    document.getElementById('calStepGoogle').style.display='none';
+    document.getElementById('calStepIphone').style.display='none';
+  }
+  document.getElementById('calHelpModal').style.display='flex';
+}
+
+// ── URLAUB VIEW ──
+let urlaubYear = new Date().getFullYear();
+const PERSON_COLORS_URL = ['#4a7fb5','#b54a6a','#4ab57a','#b5874a','#7a4ab5','#b5714a'];
+const DOW_SHORT = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+const MONTH_FULL = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+function isHHFerien(y,m,d){
+  const ds=`${y}-${pad(m)}-${pad(d)}`;
+  const HH=[['2026-03-02','2026-03-13'],['2026-05-14','2026-05-22'],['2026-07-09','2026-08-19'],
+    ['2026-10-19','2026-10-30'],['2026-12-21','2027-01-01'],['2027-03-01','2027-03-12'],
+    ['2027-05-07','2027-05-15'],['2027-07-01','2027-08-11'],['2027-10-04','2027-10-15'],
+    ['2027-12-23','2028-01-05']];
+  return HH.some(([f,t])=>ds>=f&&ds<=t);
+}
+
+function renderUrlaub(){
+  let html=`<div style="padding:10px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <button class="month-nav-btn" onclick="urlaubYear--;renderUrlaub()">‹</button>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:0.12em">${urlaubYear}</div>
+      <button class="month-nav-btn" onclick="urlaubYear++;renderUrlaub()">›</button>
+    </div>`;
+
+  for(let m=1;m<=12;m++){
+    const dim=getDaysInMonth(urlaubYear,m);
+
+    html+=`<div style="margin-bottom:16px">
+      <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border)">${MONTH_FULL[m-1]}</div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="border-collapse:collapse;min-width:${dim*18+80}px;width:100%">
+        <thead>
+          <tr>
+            <td style="width:70px;min-width:70px"></td>`;
+
+    // Day headers
+    for(let d=1;d<=dim;d++){
+      const dow=new Date(urlaubYear,m-1,d).getDay();
+      const isWe=dow===0||dow===6;
+      const ferien=isHHFerien(urlaubYear,m,d);
+      let bg='transparent',color='var(--text3)';
+      if(ferien&&!isWe){bg='rgba(40,80,40,0.4)';color='#5a9a4a';}
+      else if(isWe){bg='rgba(255,255,255,0.03)';color='var(--text4)';}
+      html+=`<td style="text-align:center;padding:2px 1px;width:18px;font-family:var(--mono);font-size:8px;color:${color};background:${bg}">${d}</td>`;
+    }
+    html+=`</tr><tr><td></td>`;
+    for(let d=1;d<=dim;d++){
+      const dow=new Date(urlaubYear,m-1,d).getDay();
+      const isWe=dow===0||dow===6;
+      const ferien=isHHFerien(urlaubYear,m,d);
+      let bg='transparent',color='var(--text4)';
+      if(ferien&&!isWe){bg='rgba(40,80,40,0.4)';color='#3a7a2a';}
+      else if(isWe){bg='rgba(255,255,255,0.03)';}
+      html+=`<td style="text-align:center;padding:1px;font-family:var(--mono);font-size:7px;color:${color};background:${bg}">${DOW_SHORT[dow]}</td>`;
+    }
+    html+=`</tr></thead><tbody>`;
+
+    // Person rows
+    PERSONS.forEach((person,pi)=>{
+      html+=`<tr>
+        <td style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text2);padding:2px 6px 2px 0;white-space:nowrap">${person}</td>`;
+      for(let d=1;d<=dim;d++){
+        const dow=new Date(urlaubYear,m-1,d).getDay();
+        const isWe=dow===0||dow===6;
+        const ds=`${urlaubYear}-${pad(m)}-${pad(d)}`;
+        const shift=(shiftData[ds]||{})[pi];
+        const isU=shift==='U';
+        const ferien=isHHFerien(urlaubYear,m,d);
+        let bg='transparent';
+        if(isU) bg=PERSON_COLORS_URL[pi];
+        else if(isWe) bg='rgba(255,255,255,0.02)';
+        else if(ferien) bg='rgba(40,80,40,0.15)';
+        html+=`<td style="background:${bg};height:16px;border-radius:${isU?'2px':'0'};border:1px solid transparent"></td>`;
+      }
+      html+=`</tr>`;
+    });
+
+    html+=`</tbody></table></div></div>`;
+  }
+
+  html+=`</div>`;
+  document.getElementById('urlaubView').innerHTML=html;
+}
+
+// ── WISHES ──
+function renderWishes(){
+  const isAdmin=currentUser&&currentUser.isAdmin;
+  let html=`<div class="wishes-view">`;
+
+  // Wish form
+  html+=`<div class="wish-form">
+    <div class="wish-form-title">Wunsch eintragen</div>
+    <div class="form-row"><label class="form-label">Person</label>
+      <select id="wPerson">${PERSONS.map((p,i)=>`<option value="${i}" ${i===(currentUser?currentUser.index:0)?'selected':''}>${p}</option>`).join('')}</select>
+    </div>
+    <div class="form-row"><label class="form-label">Datum</label><input type="date" id="wDate" value="${fmt(new Date())}"></div>
+    <div class="form-row"><label class="form-label">Schicht</label>
+      <div class="shift-grid" id="wPicker">
+        ${SHIFTS_LIST.map(s=>`<button class="sg-btn" data-s="${s}" onclick="selWishShift(this)">${s}</button>`).join('')}
+      </div>
+    </div>
+    <div class="form-row"><label class="form-label">Anmerkung</label><textarea id="wNote" placeholder="optional…"></textarea></div>
+    <button class="form-submit" onclick="saveWish()">Wunsch senden</button>
+  </div>`;
+
+  // Wish list
+  if(wishData.length===0){
+    html+=`<div class="empty-state"><p>Noch keine Wünsche</p></div>`;
+  } else {
+    html+=`<div class="wish-list">`;
+    [...wishData].reverse().forEach((w,ri)=>{
+      const i=wishData.length-1-ri;
+      html+=`<div class="wish-card">
+        <div class="wish-card-info">
+          <div class="wish-card-name">${PERSONS[w.person]}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin:3px 0">
+            <span class="shift-pill ${w.shift}" style="font-size:8px">${w.shift}</span>
+            <span class="wish-card-date">${fmtDisplay(w.date)}</span>
+          </div>
+          ${w.note?`<div class="wish-card-note">${w.note}</div>`:''}
+        </div>
+        <button class="wish-del" onclick="deleteWish(${i})">✕</button>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('wishesView').innerHTML=html;
+}
+
+let selWishShiftVal=null;
+function selWishShift(el){
+  document.querySelectorAll('#wPicker .sg-btn').forEach(b=>{b.classList.remove('sel');[...b.classList].filter(c=>SHIFTS_LIST.includes(c)).forEach(c=>b.classList.remove(c));});
+  el.classList.add('sel');el.classList.add(el.dataset.s);
+  selWishShiftVal=el.dataset.s;
+}
+
+async function saveWish(){
+  const pi=parseInt(document.getElementById('wPerson').value);
+  const date=document.getElementById('wDate').value;
+  const note=document.getElementById('wNote').value.trim();
+  if(!date||!selWishShiftVal){toast('Bitte Datum und Schicht wählen');return;}
+  try{
+    const token=await getGoogleToken();
+    if(!token){toast('Verbindungsfehler');return;}
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent("Wünsche!A:D")}:append?valueInputOption=RAW`,
+      {method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({values:[[date,PERSONS[pi],selWishShiftVal,note]]})});
+    wishData.push({date,person:pi,shift:selWishShiftVal,note});
+    selWishShiftVal=null;
+    toast('Wunsch gespeichert');
+    renderWishes();
+  }catch(e){toast('Fehler');}
+}
+
+async function deleteWish(idx){
+  wishData.splice(idx,1);
+  toast('Wunsch gelöscht');
+  renderWishes();
+  // Note: For full sheet sync, would need to rewrite the Wünsche sheet
+}
+
+// ── ADMIN ──
+function renderAdmin(){
+  if(!currentUser||!currentUser.isAdmin) return;
+  let html=`<div class="admin-view">
+    <div class="admin-section">
+      <div class="admin-section-title">Schicht einplanen</div>
+      <div class="admin-shift-form">
+        <div class="form-row"><label class="form-label">Person</label>
+          <select id="aPerson">${PERSONS.map((p,i)=>`<option value="${i}">${p}</option>`).join('')}</select>
+        </div>
+        <div class="form-row"><label class="form-label">Datum</label><input type="date" id="aDate" value="${fmt(new Date())}"></div>
+        <div class="form-row"><label class="form-label">Schicht</label>
+          <div class="shift-grid" id="aPicker">
+            ${SHIFTS_LIST.map(s=>`<button class="sg-btn" data-s="${s}" onclick="selAdminShift(this)">${s}</button>`).join('')}
+          </div>
+        </div>
+        <button class="admin-btn" onclick="saveAdminShift()">Einplanen → Sheets</button>
+      </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-title">Wünsche (${wishData.length})</div>`;
+
+  if(!wishData.length){
+    html+=`<div style="font-size:11px;color:var(--text3);font-family:var(--mono);padding:8px 0">Keine Wünsche vorhanden</div>`;
+  } else {
+    wishData.forEach((w,i)=>{
+      html+=`<div class="wish-item">
+        <span class="shift-pill ${w.shift}" style="font-size:8px">${w.shift}</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-family:var(--mono);color:var(--text2)">${PERSONS[w.person]} · ${fmtDisplay(w.date)}</div>
+          ${w.note?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${w.note}</div>`:''}
+        </div>
+        <button class="wish-quick" onclick="quickPlan(${w.person},'${w.date}','${w.shift}')">↗ Plan</button>
+      </div>`;
+    });
+  }
+
+  html+=`</div>
+    <div class="admin-section">
+      <div class="admin-section-title">Daten</div>
+      <button class="admin-btn" onclick="loadData()">↺ Neu laden von Sheets</button>
+    </div>
+    <div style="padding:16px 0;text-align:center">
+      <span style="font-size:10px;color:var(--text3);font-family:var(--mono);cursor:pointer" onclick="logout()">Ausloggen</span>
+    </div>
+  </div>`;
+  document.getElementById('adminView').innerHTML=html;
+}
+
+let selAdminShiftVal=null;
+function selAdminShift(el){
+  document.querySelectorAll('#aPicker .sg-btn').forEach(b=>{b.classList.remove('sel');SHIFTS_LIST.forEach(s=>b.classList.remove(s));});
+  el.classList.add('sel');el.classList.add(el.dataset.s);
+  selAdminShiftVal=el.dataset.s;
+}
+
+async function saveAdminShift(){
+  const pi=parseInt(document.getElementById('aPerson').value);
+  const date=document.getElementById('aDate').value;
+  if(!date||!selAdminShiftVal){toast('Bitte Datum und Schicht wählen');return;}
+  setSyn('loading');
+  try{
+    await saveShiftToSheets(date,pi,selAdminShiftVal);
+    if(!shiftData[date]) shiftData[date]={};
+    shiftData[date][pi]=selAdminShiftVal;
+    setSyn('ok');setTimeout(()=>setSyn(''),2000);
+    toast(`${PERSONS[pi]}: ${selAdminShiftVal} gespeichert`);
+    renderWeek();
+  }catch(e){setSyn('err');toast('Fehler beim Speichern');}
+}
+
+async function quickPlan(pi,date,shift){
+  setSyn('loading');
+  try{
+    await saveShiftToSheets(date,pi,shift);
+    if(!shiftData[date]) shiftData[date]={};
+    shiftData[date][pi]=shift;
+    setSyn('ok');setTimeout(()=>setSyn(''),2000);
+    toast(`${PERSONS[pi]}: ${shift} eingeplant`);
+    renderAdmin();renderWeek();
+  }catch(e){setSyn('err');toast('Fehler');}
+}
+
+// ── SHIFT MODAL (admin inline edit) ──
+function openShiftModal(pi,date,currentShift){
+  if(!currentUser||!currentUser.isAdmin) return;
+  document.getElementById('smPerson').innerHTML=PERSONS.map((p,i)=>`<option value="${i}" ${i===pi?'selected':''}>${p}</option>`).join('');
+  document.getElementById('smDate').value=date;
+  selShift=currentShift||null;
+  document.getElementById('smPicker').innerHTML=SHIFTS_LIST.map(s=>
+    `<button class="sg-btn${s===currentShift?' sel '+s:''}" data-s="${s}" onclick="selModalShift(this)">${s}</button>`
+  ).join('');
+  document.getElementById('shiftModal').style.display='flex';
+}
+
+function selModalShift(el){
+  document.querySelectorAll('#smPicker .sg-btn').forEach(b=>{b.classList.remove('sel');SHIFTS_LIST.forEach(s=>b.classList.remove(s));});
+  el.classList.add('sel');el.classList.add(el.dataset.s);
+  selShift=el.dataset.s;
+}
+
+async function saveShift(){
+  const pi=parseInt(document.getElementById('smPerson').value);
+  const date=document.getElementById('smDate').value;
+  if(!date||!selShift){toast('Bitte Schicht wählen');return;}
+  closeModal('shiftModal');
+  setSyn('loading');
+  try{
+    await saveShiftToSheets(date,pi,selShift);
+    if(!shiftData[date]) shiftData[date]={};
+    shiftData[date][pi]=selShift;
+    setSyn('ok');setTimeout(()=>setSyn(''),2000);
+    toast(`${PERSONS[pi]}: ${selShift}`);
+    renderWeek();
+  }catch(e){setSyn('err');toast('Fehler');}
+}
+
+function closeModal(id){document.getElementById(id).style.display='none';}
+function confirmDel(){}
+
+// ── PDF EXPORT ──
+function printPersonMonth(pi, y, m){
+  const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const DOW=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const dim = getDaysInMonth(y,m);
+  const today = fmt(new Date());
+  const COLORS={FD:'#cfe2ff',MD:'#d1e7dd',ZD:'#fff3cd',SD:'#f8d7da',SA:'#e2d9f3',F:'#e9ecef',K:'#f8d7da',U:'#d1e7dd',FORTB:'#cff4fc',HO:'#e9ecef'};
+  const FGCOLORS={FD:'#0a367a',MD:'#0a3622',ZD:'#664d03',SD:'#58151c',SA:'#3d1a78',F:'#6c757d',K:'#842029',U:'#0a3622',FORTB:'#055160',HO:'#495057'};
+
+  let rows = '';
+  for(let d=1;d<=dim;d++){
+    const ds=`${y}-${pad(m)}-${pad(d)}`;
+    const dow=new Date(y,m-1,d).getDay();
+    const isWe=dow===0||dow===6;
+    let shift=(shiftData[ds]||{})[pi];
+    if(!shift&&pi===0&&!isWe){
+      const di=(dow+6)%7;
+      if(di===0||di===4) shift='SD';
+      if(di===1||di===3) shift='FD';
+    }
+    const isToday=ds===today;
+    const bg=shift?(COLORS[shift]||'#f0f0f0'):(isWe?'#f5f5f5':'#fff');
+    const fg=shift?(FGCOLORS[shift]||'#333'):'#ccc';
+    const times=shift&&SHIFT_TIMES[shift]&&SHIFT_TIMES[shift]!=='–'?SHIFT_TIMES[shift]:'';
+    rows+=`<tr style="background:${isWe?'#f9f9f9':'#fff'}${isToday?';outline:2px solid #1a1a2e':''}">
+      <td style="padding:5px 8px;font-size:10px;color:#888;font-family:monospace;border:1px solid #eee;font-weight:${isToday?'700':'400'}">${pad(d)}</td>
+      <td style="padding:5px 8px;font-size:10px;color:${isWe?'#bbb':'#555'};border:1px solid #eee">${DOW[dow]}</td>
+      <td style="padding:5px 8px;text-align:center;border:1px solid #eee;background:${bg}"><span style="font-size:10px;font-weight:700;color:${fg}">${shift||'–'}</span></td>
+      <td style="padding:5px 8px;font-size:9px;color:#999;border:1px solid #eee;font-family:monospace">${times}</td>
+    </tr>`;
+  }
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${PERSONS[pi]} – ${MONTHS[m-1]} ${y}</title>
+<style>body{font-family:Arial,sans-serif;margin:20px;color:#222}h2{font-size:14px;margin-bottom:2px;color:#1a1a2e}p{font-size:9px;color:#888;margin-bottom:12px;font-family:monospace}table{border-collapse:collapse;width:280px}@media print{button{display:none}}</style>
+</head><body>
+<h2>Röntgenpraxis Heegbarg</h2>
+<p>${PERSONS[pi]} · ${MONTHS[m-1]} ${y} · Stand: ${new Date().toLocaleDateString('de-DE')}</p>
+<table><thead><tr>
+  <th style="padding:4px 8px;background:#1a1a2e;color:#fff;border:1px solid #333;font-size:9px">Tag</th>
+  <th style="padding:4px 8px;background:#1a1a2e;color:#fff;border:1px solid #333;font-size:9px">Wt.</th>
+  <th style="padding:4px 8px;background:#1a1a2e;color:#fff;border:1px solid #333;font-size:9px">Schicht</th>
+  <th style="padding:4px 8px;background:#1a1a2e;color:#fff;border:1px solid #333;font-size:9px">Zeit</th>
+</tr></thead><tbody>${rows}</tbody></table>
+<br>
+<button onclick="window.close()" style="padding:8px 16px;background:#eee;color:#333;border:none;border-radius:6px;cursor:pointer;font-size:12px;margin-right:8px">← Zurück</button>
+<button onclick="window.print()" style="padding:8px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px">🖨 Als PDF speichern</button>
+</body></html>`);
+  win.document.close();
+}
+
+function printWeek(){
+  const days = getWeekDays(weekOffset);
+  const mon = days[0], sat = days[5];
+  const title = `Woche ${mon.getDate()}.${mon.getMonth()+1}. – ${sat.getDate()}.${sat.getMonth()+1}.${sat.getFullYear()}`;
+  printPlan(title, days);
+}
+
+function printMonth(){
+  const now = new Date();
+  const refDay = getMonday(weekOffset);
+  const y = refDay.getFullYear(), m = refDay.getMonth();
+  const firstDay = new Date(y, m, 1);
+  const lastDay = new Date(y, m+1, 0);
+  const days = [];
+  for(let d=new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)){
+    if(d.getDay()!==0) days.push(new Date(d)); // skip sundays
+  }
+  const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  printPlan(`${MONTHS[m]} ${y}`, days);
+}
+
+function printPlan(title, days){
+  const DOW=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const today = fmt(new Date());
+
+  let rows = '';
+  PERSONS.forEach((person,pi)=>{
+    let cells = '';
+    days.forEach(day=>{
+      const ds = fmt(day);
+      const dow = day.getDay();
+      const isSat = dow===6;
+      let shift = (shiftData[ds]||{})[pi];
+      if(!shift&&pi===0&&!isSat){
+        const di=(dow+6)%7;
+        if(di===0||di===4) shift='SD';
+        if(di===1||di===3) shift='FD';
+      }
+      const isToday = ds===today;
+      const COLORS={FD:'#cfe2ff',MD:'#d1e7dd',ZD:'#fff3cd',SD:'#f8d7da',SA:'#e2d9f3',F:'#e9ecef',K:'#f8d7da',U:'#d1e7dd',FORTB:'#cff4fc',HO:'#e9ecef'};
+      const FGCOLORS={FD:'#0a367a',MD:'#0a3622',ZD:'#664d03',SD:'#58151c',SA:'#3d1a78',F:'#6c757d',K:'#842029',U:'#0a3622',FORTB:'#055160',HO:'#495057'};
+      const bg = shift ? (COLORS[shift]||'#f0f0f0') : (isSat?'#f5f5f5':'#ffffff');
+      const fg = shift ? (FGCOLORS[shift]||'#333') : '#ccc';
+      cells += `<td style="text-align:center;padding:4px 2px;background:${bg};border:1px solid #e0e0e0;font-weight:${shift?'700':'400'};color:${fg};font-size:10px${isToday?';outline:2px solid #555':''}">${shift||'–'}</td>`;
+    });
+    rows += `<tr><td style="padding:4px 8px;font-weight:600;font-size:10px;white-space:nowrap;border:1px solid #e0e0e0;background:#f8f8f8">${person}</td>${cells}</tr>`;
+  });
+
+  let dayHeaders = days.map(d=>{
+    const dow = d.getDay();
+    const isToday = fmt(d)===today;
+    return `<th style="text-align:center;padding:4px 2px;font-size:9px;font-weight:600;background:${isToday?'#1a1a2e':'#2a2a4e'};color:${isToday?'#60a5fa':'#aaaacc'};border:1px solid #333;min-width:32px">${DOW[dow]}<br><span style="font-weight:400;font-size:8px">${d.getDate()}.${d.getMonth()+1}</span></th>`;
+  }).join('');
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>${title}</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:20px;color:#222}
+  h2{font-size:14px;margin-bottom:4px;color:#1a1a2e}
+  p{font-size:9px;color:#888;margin-bottom:12px;font-family:monospace}
+  table{border-collapse:collapse;width:100%}
+  @media print{body{margin:10px}button{display:none}}
+</style>
+</head><body>
+<h2>Röntgenpraxis Heegbarg · ${title}</h2>
+<p>Praxisplan · Stand: ${new Date().toLocaleDateString('de-DE')}</p>
+<table>
+  <thead><tr>
+    <th style="text-align:left;padding:4px 8px;background:#1a1a2e;color:#fff;border:1px solid #333;font-size:10px;min-width:70px">Person</th>
+    ${dayHeaders}
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<br>
+<div style="font-size:8px;color:#aaa;font-family:monospace">FD 7:30–13:30 · MD 11–17 · ZD 10–16 · SD 14–20 · SA 9–14</div>
+<br>
+<button onclick="window.close()" style="padding:8px 16px;background:#eee;color:#333;border:none;border-radius:6px;cursor:pointer;font-size:12px;margin-right:8px">← Zurück</button>
+<button onclick="window.print()" style="padding:8px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px">🖨 Drucken / Als PDF speichern</button>
+</body></html>`);
+  win.document.close();
+}
+
+// ── INIT ──
+initLogin();
+</script>
+</body>
+</html>

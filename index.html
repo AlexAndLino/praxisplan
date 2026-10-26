@@ -940,7 +940,23 @@ function exportCalendar(pi,y,m,calType='iphone'){
   if(count===0){ alert('Keine Dienste in diesem Monat.'); return; }
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   if(isIOS && calType!=='google'){
-    // iPhone: Kalender-Vorschau direkt öffnen → „Alle hinzufügen“ – kein Umweg über Dateien-App
+    const standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+    const fname=`${name}_${y}-${pad(m)}.ics`;
+    let file=null;try{file=new File([ics],fname,{type:'text/calendar'});}catch(e){}
+    if(standalone && file && navigator.canShare && navigator.canShare({files:[file]})){
+      // Home-Bildschirm-App: Safari blockiert hier Downloads → Teilen-Menü öffnen
+      navigator.share({files:[file],title:`${name} Dienste ${MONTH_NAMES[m-1]} ${y}`}).then(()=>{
+        document.getElementById('calHelpName').textContent=`${name} · ${count} Termine · ${MONTH_NAMES[m-1]} ${y}`;
+        document.getElementById('calHelpStep2').innerHTML='Falls die Termine noch nicht im Kalender sind: <strong>Dateien-App</strong> öffnen → Datei <strong>'+fname+'</strong> antippen → <strong>„Alle hinzufügen“</strong>.';
+        document.getElementById('calStepGoogle').style.display='none';
+        document.getElementById('calStepIphone').style.display='none';
+        const s1=document.querySelector('#calHelpModal .cal-step .cal-step-text');
+        if(s1) s1.innerHTML='Im Teilen-Menü <strong>„Kalender“</strong> wählen – oder <strong>„In Dateien sichern“</strong>.';
+        document.getElementById('calHelpModal').style.display='flex';
+      }).catch(()=>{});
+      return;
+    }
+    // Safari: Kalender-Vorschau direkt öffnen → „Alle hinzufügen“
     window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
     return;
   }

@@ -855,6 +855,10 @@ function exportCalendar(pi,y,m,calType='iphone'){
   ics+='X-WR-CALNAME:'+name+' Dienste\r\n';
   ics+='X-WR-TIMEZONE:Europe/Berlin\r\n';
   ics+='METHOD:PUBLISH\r\n';
+  ics+='BEGIN:VTIMEZONE\r\nTZID:Europe/Berlin\r\n'+
+    'BEGIN:DAYLIGHT\r\nTZOFFSETFROM:+0100\r\nTZOFFSETTO:+0200\r\nTZNAME:CEST\r\nDTSTART:19700329T020000\r\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\nEND:DAYLIGHT\r\n'+
+    'BEGIN:STANDARD\r\nTZOFFSETFROM:+0200\r\nTZOFFSETTO:+0100\r\nTZNAME:CET\r\nDTSTART:19701025T030000\r\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\nEND:STANDARD\r\n'+
+    'END:VTIMEZONE\r\n';
 
   let count=0;
   for(let day=1;day<=dim;day++){
@@ -880,7 +884,8 @@ function exportCalendar(pi,y,m,calType='iphone'){
     } else {
       // All-day for non-time shifts
       dtstart=`${y}${pad(m)}${pad(day)}`;
-      dtend=`${y}${pad(m)}${pad(day)}`;
+      const nx=new Date(y,m-1,day+1);
+      dtend=`${nx.getFullYear()}${pad(nx.getMonth()+1)}${pad(nx.getDate())}`; // Ende = Folgetag (sonst ungültig)
       allDay=true;
     }
 
@@ -904,6 +909,13 @@ function exportCalendar(pi,y,m,calType='iphone'){
   }
   ics+='END:VCALENDAR';
 
+  if(count===0){ alert('Keine Dienste in diesem Monat.'); return; }
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(isIOS && calType!=='google'){
+    // iPhone: Kalender-Vorschau direkt öffnen → „Alle hinzufügen“ – kein Umweg über Dateien-App
+    window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
+    return;
+  }
   const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -911,7 +923,7 @@ function exportCalendar(pi,y,m,calType='iphone'){
   a.download=`${name}_${y}-${pad(m)}.ics`;
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(()=>URL.revokeObjectURL(url),60000); // nicht sofort freigeben, sonst bricht der Download ab
   // Show help dialog
   document.getElementById('calHelpName').textContent = `${name} · ${count} Termine · ${MONTH_NAMES[m-1]} ${y}`;
   // Update step 2 based on calendar type
